@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 
 import rospy
-from std_msgs.msg import Bool
-from dbw_mkz_msgs.msg import ThrottleCmd, SteeringCmd, BrakeCmd, SteeringReport
+from dbw_mkz_msgs.msg import ThrottleCmd, SteeringCmd, BrakeCmd
 from geometry_msgs.msg import TwistStamped
-import math
-
+from std_msgs.msg import Bool
 from twist_controller import Controller
 
 '''
@@ -69,11 +67,10 @@ class DBWNode(object):
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(50)  # 50Hz
+        rate = rospy.Rate(50)  # 50 Hz
         while not rospy.is_shutdown():
-            # TODO: Get predicted throttle, brake, and steering using `twist_controller`
             # You should only publish the control commands if dbw is enabled
-            if not None in (self.current_velocity, self.dbw_enabled, self.linear_velocity, self.angular_velocity):
+            if None not in(self.current_velocity, self.dbw_enabled, self.linear_velocity, self.angular_velocity):
                 self.throttle, self.brake, self.steering = self.controller.control(self.current_velocity,
                                                                                    self.dbw_enabled,
                                                                                    self.linear_velocity,
