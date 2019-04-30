@@ -105,17 +105,25 @@ class WaypointUpdater(object):
 
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
-        stop_idx = max(self.stopline_waypoint_idx - closest_idx - 2, 0)
-        for i, waypoint in enumerate(waypoints):
+        stop_idx = max(self.stopline_waypoint_idx - closest_idx - 5, 0)
+
+        current_velocity = self.get_waypoint_velocity(self.base_lane.waypoints[closest_idx])
+        # TODO: add 0.0s here instead of having 2 for loops
+        if stop_idx > 0:
+            velocities = np.linspace(current_velocity, 0.0, num=(stop_idx + 1))
+        else:
+            velocities = [0.0]
+
+        for velocity, waypoint in zip(velocities, waypoints[:stop_idx + 1]):
             wp = Waypoint()
             wp.pose = waypoint.pose
+            wp.twist.twist.linear.x = velocity
+            temp.append(wp)
 
-            dist = self.distance(waypoints, i, stop_idx)
-            vel = math.sqrt(2 * MAX_DECELERATION * dist)
-            if vel < 1.0:
-                vel = 0.0
-            wp.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
-
+        for waypoint in waypoints[stop_idx + 2:]:
+            wp = Waypoint()
+            wp.pose = waypoint.pose
+            wp.twist.twist.linear.x = 0.0
             temp.append(wp)
 
         return temp
