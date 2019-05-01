@@ -5,6 +5,7 @@ import math
 import numpy as np
 import rospy
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import TwistStamped
 from scipy.spatial import KDTree
 from std_msgs.msg import Int32
 from styx_msgs.msg import Lane
@@ -34,6 +35,7 @@ class WaypointUpdater(object):
         rospy.init_node('waypoint_updater')
 
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb)
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
         rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
 
@@ -46,6 +48,7 @@ class WaypointUpdater(object):
         self.waypoints_2d = None
         self.waypoint_tree = None
         self.stopline_waypoint_idx = None
+        self.current_velocity = 0.0
 
         self.loop()
 
@@ -58,6 +61,9 @@ class WaypointUpdater(object):
 
     def pose_cb(self, msg):
         self.pose = msg
+
+    def current_velocity_cb(self, msg):
+        self.current_velocity = msg.twist.linear.x
 
     def waypoints_cb(self, msg):
         self.base_lane = msg
@@ -105,13 +111,9 @@ class WaypointUpdater(object):
 
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
-        stop_idx = max(self.stopline_waypoint_idx - closest_idx - 5, 0)
+        stop_idx = max(self.stopline_waypoint_idx - closest_idx - 20, 0)
 
-        current_velocity = self.get_waypoint_velocity(self.base_lane.waypoints[closest_idx])
-        if stop_idx > 0:
-            velocities = np.linspace(current_velocity, 0.0, num=(stop_idx + 1)).tolist()
-        else:
-            velocities = [0.0]
+        velocities = np.linspace(0.0, self.current_velocity, num=(stop_idx + 1)).tolist()[::-1]
 
         velocities.extend([0.0] * (LOOKAHEAD_WPS - stop_idx))
 
