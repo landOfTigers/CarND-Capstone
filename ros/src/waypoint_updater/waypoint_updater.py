@@ -108,22 +108,17 @@ class WaypointUpdater(object):
         stop_idx = max(self.stopline_waypoint_idx - closest_idx - 5, 0)
 
         current_velocity = self.get_waypoint_velocity(self.base_lane.waypoints[closest_idx])
-        # TODO: add 0.0s here instead of having 2 for loops
         if stop_idx > 0:
-            velocities = np.linspace(current_velocity, 0.0, num=(stop_idx + 1))
+            velocities = np.linspace(current_velocity, 0.0, num=(stop_idx + 1)).tolist()
         else:
             velocities = [0.0]
 
-        for velocity, waypoint in zip(velocities, waypoints[:stop_idx + 1]):
+        velocities.extend([0.0] * (LOOKAHEAD_WPS - stop_idx))
+
+        for velocity, waypoint in zip(velocities, waypoints):
             wp = Waypoint()
             wp.pose = waypoint.pose
             wp.twist.twist.linear.x = velocity
-            temp.append(wp)
-
-        for waypoint in waypoints[stop_idx + 2:]:
-            wp = Waypoint()
-            wp.pose = waypoint.pose
-            wp.twist.twist.linear.x = 0.0
             temp.append(wp)
 
         return temp
