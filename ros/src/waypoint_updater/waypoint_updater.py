@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
 import math
-
 import numpy as np
 import rospy
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import TwistStamped
 from scipy.spatial import KDTree
 from std_msgs.msg import Int32
-from styx_msgs.msg import Lane
-from styx_msgs.msg import Waypoint
+from styx_msgs.msg import Lane, Waypoint
 
 '''
 This node will publish waypoints from the car's current position to some `x` distance ahead.
@@ -26,7 +24,7 @@ as well as to verify your TL classifier.
 TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
-LOOKAHEAD_WPS = 200  # Number of waypoints we will publish. You can change this number
+LOOKAHEAD_WPS = 100  # Number of waypoints we will publish. You can change this number
 MAX_DECELERATION = 0.5
 
 
@@ -47,8 +45,9 @@ class WaypointUpdater(object):
         self.base_lane = None
         self.waypoints_2d = None
         self.waypoint_tree = None
-        self.stopline_waypoint_idx = None
+        self.stopline_waypoint_idx = -1
         self.current_velocity = 0.0
+        self.start_position = None
 
         self.loop()
 
@@ -61,6 +60,8 @@ class WaypointUpdater(object):
 
     def pose_cb(self, msg):
         self.pose = msg
+        if self.start_position is None:
+            self.start_position = self.get_closest_waypoint_idx()
 
     def current_velocity_cb(self, msg):
         self.current_velocity = msg.twist.linear.x
@@ -106,7 +107,8 @@ class WaypointUpdater(object):
         rospy.loginfo("Red light stop line: {}".format(self.stopline_waypoint_idx))
         rospy.loginfo("Farthest wp idx: {}".format(farthest_idx))
 
-        if 0 <= self.stopline_waypoint_idx <= farthest_idx:
+        initial_wp_delay = 4
+        if (0 <= self.stopline_waypoint_idx <= farthest_idx) and (closest_idx > self.start_position + initial_wp_delay):
             rospy.loginfo("Decelerating...")
             lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
         else:
@@ -117,16 +119,15 @@ class WaypointUpdater(object):
 
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
-        stop_idx = max(self.stopline_waypoint_idx - closest_idx - 20, 0)
+        stop_idx = max(self.stopline_waypoint_idx - closest_idx - 2, 0)
 
-        velocities = np.linspace(0.0, self.current_velocity, num=(stop_idx + 1)).tolist()[::-1]
-
-        velocities.extend([0.0] * (LOOKAHEAD_WPS - stop_idx))
+        velocities = np.linspace(0.0, self.current_velocity, endpoint=False, num=(stop_idx + 1)).tolist()[::-1]
+        velocities.extend([0.0] * (LOOKAHEAD_WPS - stop_idx - 1))
 
         for velocity, waypoint in zip(velocities, waypoints):
             wp = Waypoint()
             wp.pose = waypoint.pose
-            wp.twist.twist.linear.x = velocity
+            wp.twist.twist.linear.x = min(velocity, waypoint.twist.twist.linear.x)
             temp.append(wp)
 
         return temp
