@@ -102,9 +102,15 @@ class WaypointUpdater(object):
         farthest_idx = closest_idx + LOOKAHEAD_WPS
         base_waypoints = self.base_lane.waypoints[closest_idx:farthest_idx]
 
+        rospy.loginfo("Closest wp idx: {}".format(closest_idx))
+        rospy.loginfo("Red light stop line: {}".format(self.stopline_waypoint_idx))
+        rospy.loginfo("Farthest wp idx: {}".format(farthest_idx))
+
         if 0 <= self.stopline_waypoint_idx <= farthest_idx:
+            rospy.loginfo("Decelerating...")
             lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
         else:
+            rospy.loginfo("Going normally")
             lane.waypoints = base_waypoints
 
         return lane
