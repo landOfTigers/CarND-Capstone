@@ -53,6 +53,7 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+        self.cv_bridge = CvBridge()
 
         rospy.spin()
 
@@ -82,9 +83,8 @@ class TLDetector(object):
         self.camera_image = msg
 
         if self.image_cb_counter <= 4:
-            bridge = CvBridge()
-            cv_image = bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
-            cv2.imwrite('tl_images/%s.png' % self.image_cb_counter, cv_image)
+            cv_image = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+            cv2.imwrite('light_classification/tl_images/%s.png' % self.image_cb_counter, cv_image)
             self.image_cb_counter += 1
 
         light_wp, state = self.process_traffic_lights()
