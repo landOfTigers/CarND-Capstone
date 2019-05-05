@@ -25,6 +25,7 @@ class TLDetector(object):
         self.waypoint_tree = None
         self.camera_image = None
         self.lights = []
+        self.image_cb_called = False
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -79,6 +80,13 @@ class TLDetector(object):
         """
         self.has_image = True
         self.camera_image = msg
+
+        if not self.image_cb_called:
+            bridge = CvBridge()
+            cv_image = bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+            cv2.imwrite('demo_image.png', cv_image)
+            self.image_cb_called = True
+
         light_wp, state = self.process_traffic_lights()
 
         '''
