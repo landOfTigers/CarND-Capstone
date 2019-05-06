@@ -5,6 +5,7 @@ from keras.layers.convolutional import Conv2D
 from keras.layers.core import Activation, Flatten, Dropout
 from keras.layers.pooling import MaxPooling2D
 from keras.models import Sequential
+
 from sample_generator import create_samples_from_log
 
 # 1: define model architecture

@@ -27,6 +27,7 @@ class TLDetector(object):
         self.lights = []
         self.image_cb_counter = 0
         self.record_data = False
+        self.light_classifier = TLClassifier()
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -47,14 +48,12 @@ class TLDetector(object):
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
 
         self.bridge = CvBridge()
-        self.light_classifier = TLClassifier()
         self.listener = tf.TransformListener()
 
         self.state = TrafficLight.UNKNOWN
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
-        self.cv_bridge = CvBridge()
 
         rospy.spin()
 
@@ -84,7 +83,7 @@ class TLDetector(object):
         self.camera_image = msg
 
         if self.record_data:
-            cv_image = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+            cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
             cv2.imwrite('light_classification/tl_images/%s.png' % self.image_cb_counter, cv_image)
             self.image_cb_counter += 1
 
@@ -132,16 +131,17 @@ class TLDetector(object):
 
         """
         # For testing
-        return light.state
+        # return light.state
 
-        # if (not self.has_image):
-        #     self.prev_light_loc = None
-        #     return False
-        #
-        # cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
-        #
-        # # Get classification
-        # return self.light_classifier.get_classification(cv_image)
+        if not self.has_image:
+            self.prev_light_loc = None
+            return False
+
+        cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
+        classification = self.light_classifier.get_classification(cv_image)
+        rospy.logwarn('Classification: %s' % classification)
+
+        return classification
 
     def process_traffic_lights(self):
         """Finds closest visible traffic light, if one exists, and determines its

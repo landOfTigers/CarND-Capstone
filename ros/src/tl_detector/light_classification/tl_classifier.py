@@ -1,9 +1,13 @@
-from styx_msgs.msg import TrafficLight
+import os
+
+import numpy as np
+from keras.models import load_model
+
 
 class TLClassifier(object):
     def __init__(self):
-        #TODO load classifier
-        pass
+        model_path = '%s/model.h5' % os.path.dirname(os.path.realpath(__file__))
+        self.model = load_model(model_path)
 
     def get_classification(self, image):
         """Determines the color of the traffic light in the image
@@ -15,5 +19,5 @@ class TLClassifier(object):
             int: ID of traffic light color (specified in styx_msgs/TrafficLight)
 
         """
-        #TODO implement light color prediction
-        return TrafficLight.UNKNOWN
+        predictions = self.model.predict(image[None, :, :, :], batch_size=1)
+        return np.argmax(predictions[0])
