@@ -26,6 +26,7 @@ class TLDetector(object):
         self.camera_image = None
         self.lights = []
         self.image_cb_counter = 0
+        self.record_data = False
 
         sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
         sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
@@ -82,7 +83,7 @@ class TLDetector(object):
         self.has_image = True
         self.camera_image = msg
 
-        if self.image_cb_counter <= 4:
+        if self.record_data:
             cv_image = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
             cv2.imwrite('light_classification/tl_images/%s.png' % self.image_cb_counter, cv_image)
             self.image_cb_counter += 1
