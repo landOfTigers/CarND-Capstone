@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
+import matplotlib.pyplot as plt
 import sys
 import termios
 import tty
-from pathlib import Path
 
 import cv2
-import matplotlib.pyplot as plt
+import numpy as np
+from pathlib import Path
 
 IMG_DIR = 'tl_images'
 LABELED_DATA_FILE = "labeled_data.csv"
@@ -44,9 +45,10 @@ def user_input():
 
 if __name__ == '__main__':
     plt.ion()
-    file = open(LABELED_DATA_FILE, "a")
+    labels_file = open(LABELED_DATA_FILE, "a")
     img_paths = Path(IMG_DIR).glob('**/*.png')
     tl_state = None
+    plot = plt.imshow(np.zeros((600, 800)))
     for img_path in img_paths:
         path = str(img_path)
 
@@ -55,15 +57,15 @@ if __name__ == '__main__':
             continue
 
         image = cv2.imread(path)
-        plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        plot.set_data(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
         plt.pause(0.05)
 
         tl_state = user_input()
         if tl_state == "e":
             break
-        file.write("%s, %s\n" % (path, (state_mapper(tl_state))))
+        labels_file.write("%s, %s\n" % (path, (state_mapper(tl_state))))
 
-    file.close()
+    labels_file.close()
 
     if tl_state != "e":
         print("\n******************************")
