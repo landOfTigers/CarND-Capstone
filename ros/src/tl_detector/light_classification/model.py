@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import json
+import datetime
 from keras.layers import Lambda, Dense
 from keras.layers.convolutional import Conv2D
 from keras.layers.core import Activation, Flatten, Dropout
@@ -26,6 +28,11 @@ model.summary()
 # 2: compile and fit the model
 model.compile('adam', 'categorical_crossentropy', ['accuracy'])
 x_train, y_train = create_samples_from_log()
-history = model.fit(x_train, y_train, epochs=3, validation_split=0.2)
+history = model.fit(x_train, y_train, epochs=3, batch_size=32, validation_split=0.2)
+
+# 3: save history to file
+timestamp = datetime.datetime.now().strftime('%Y_%m_%d__%H:%M')
+with open('model_history/%s.json' % timestamp, 'w') as f:
+    json.dump(history.history, f)
 
 model.save('model.h5')
