@@ -43,11 +43,11 @@ def user_input():
         print("Please select a valid label!")
 
 
-if __name__ == '__main__':
-    plt.ion()
-    labels_file = open(LABELED_DATA_FILE, "a")
+def labeling_loop():
+    labeled_data_file = open(LABELED_DATA_FILE, "a")
     img_paths = Path(IMG_DIR).glob('**/*.png')
     tl_state = None
+    plt.ion()
     plot = plt.imshow(np.zeros((600, 800)))
     for img_path in img_paths:
         path = str(img_path)
@@ -63,11 +63,15 @@ if __name__ == '__main__':
         tl_state = user_input()
         if tl_state == "e":
             break
-        labels_file.write("%s, %s\n" % (path, (state_mapper(tl_state))))
+        labeled_data_file.write("%s, %s\n" % (path, (state_mapper(tl_state))))
 
-    labels_file.close()
+    labeled_data_file.close()
 
     if tl_state != "e":
         print("\n******************************")
-        print("Finished labelling all images!")
+        print("Finished labeling all images!")
         print("******************************\n")
+
+
+if __name__ == '__main__':
+    labeling_loop()
