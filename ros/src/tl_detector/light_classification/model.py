@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-import json
 import datetime
+import json
+
+from keras import backend as K
 from keras.layers import Lambda, Dense
 from keras.layers.convolutional import Conv2D
 from keras.layers.core import Activation, Flatten, Dropout
@@ -12,7 +14,8 @@ from sample_generator import create_samples_from_log
 
 # 1: define model architecture
 model = Sequential()
-model.add(Lambda(lambda x: x / 255.0 - 0.5, input_shape=(600, 800, 3)))
+model.add(Lambda(lambda image: K.tf.image.resize_images(image, (150, 200)), input_shape=(600, 800, 3)))
+model.add(Lambda(lambda x: x / 255.0 - 0.5))
 model.add(Conv2D(32, (3, 3)))
 model.add(MaxPooling2D((2, 2)))
 model.add(Dropout(0.5))
@@ -28,7 +31,7 @@ model.summary()
 # 2: compile and fit the model
 model.compile('adam', 'categorical_crossentropy', ['accuracy'])
 x_train, y_train = create_samples_from_log()
-history = model.fit(x_train, y_train, epochs=3, batch_size=32, validation_split=0.2)
+history = model.fit(x_train, y_train, epochs=3, batch_size=16, validation_split=0.2)
 
 # 3: save history to file
 timestamp = datetime.datetime.now().strftime('%Y_%m_%d__%H:%M')
