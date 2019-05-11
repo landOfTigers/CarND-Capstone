@@ -42,14 +42,39 @@ def create_samples_from_log():
         # add traffic light states
         tl_state = int(line[1])
         tl_states.append(tl_state)
+    return images, tl_states
 
+
+def create_augmented_training_set():
+    images, tl_states = create_samples_from_log()
     x_train, y_train = flip_and_stack_training_data(images, tl_states)
     y_one_hot = LabelBinarizer().fit_transform(y_train)
-
     return x_train, y_one_hot
 
 
+def print_samples_stats():
+    print("Statistic of original (non-augmented) data set:")
+    images, tl_states = create_samples_from_log()
+    total = len(tl_states)
+    red = tl_states.count(0)
+    yellow = tl_states.count(1)
+    green = tl_states.count(2)
+    unknown = tl_states.count(4)
+
+    output = '''
+        Total number of traffic lights: {}
+        Number of red lights: {}
+        Number of yellow lights: {}
+        Number of green lights: {}
+        Number no/unknown lights: {}
+        '''.format(total, red, yellow, green, unknown)
+
+    print (output)
+
+
 if __name__ == '__main__':
-    x_samples, y_samples = create_samples_from_log()
+    print_samples_stats()
+
+    x_samples, y_samples = create_augmented_training_set()
     print(x_samples.shape)
     print(y_samples.shape)

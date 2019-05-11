@@ -10,7 +10,7 @@ from keras.layers.core import Activation, Flatten, Dropout
 from keras.layers.pooling import MaxPooling2D
 from keras.models import Sequential
 
-from sample_generator import create_samples_from_log
+from sample_generator import create_augmented_training_set
 
 # 1: define model architecture
 model = Sequential()
@@ -30,7 +30,7 @@ model.summary()
 
 # 2: compile and fit the model
 model.compile('adam', 'categorical_crossentropy', ['accuracy'])
-x_train, y_train = create_samples_from_log()
+x_train, y_train = create_augmented_training_set()
 history = model.fit(x_train, y_train, epochs=4, batch_size=16, shuffle=True, validation_split=0.2)
 
 # 3: save history to file
