@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
 import csv
+import random
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
+import skimage as sk
 from sklearn.preprocessing import LabelBinarizer
 
 
@@ -17,16 +20,23 @@ def read_from_log_file(file_name):
     return samples
 
 
-def flip_and_stack_training_data(xx, yy):
-    x_flipped = []
-    y_flipped = []
+def append_flipped_training_data(xx, yy):
+    x_result = list(xx)
+    y_result = list(yy)
     for x, y in zip(xx, yy):
-        x_flipped.append(np.fliplr(x))
-        y_flipped.append(y)
+        x_result.append(np.fliplr(x))
+        y_result.append(y)
+    return x_result, y_result
 
-    x_result = np.vstack((np.array(xx), np.array(x_flipped)))
-    y_result = np.append(np.array(yy), np.array(y_flipped))
 
+def append_randomly_rotated_training_data(xx, yy):
+    random_degree = random.uniform(-5, 5)
+    x_result = list(xx)
+    y_result = list(yy)
+    for x, y in zip(xx, yy):
+        rot = sk.transform.rotate(x, random_degree, preserve_range=True).astype(np.uint8)
+        x_result.append(rot)
+        y_result.append(y)
     return x_result, y_result
 
 
@@ -47,9 +57,10 @@ def create_samples_from_log():
 
 def create_augmented_training_set():
     images, tl_states = create_samples_from_log()
-    x_train, y_train = flip_and_stack_training_data(images, tl_states)
-    y_one_hot = LabelBinarizer().fit_transform(y_train)
-    return x_train, y_one_hot
+    x_train, y_train = append_flipped_training_data(images, tl_states)
+    x_train, y_train = append_randomly_rotated_training_data(x_train, y_train)
+    y_one_hot = LabelBinarizer().fit_transform(np.array(y_train))
+    return np.array(x_train), y_one_hot
 
 
 def print_samples_stats():
@@ -74,7 +85,8 @@ def print_samples_stats():
 
 if __name__ == '__main__':
     print_samples_stats()
-
     x_samples, y_samples = create_augmented_training_set()
-    print(x_samples.shape)
-    print(y_samples.shape)
+
+    # display one image for demo purposes
+    plt.imshow(cv2.cvtColor(x_samples[3], cv2.COLOR_BGR2RGB))
+    plt.show()
