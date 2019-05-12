@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import csv
-import random
 
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import skimage as sk
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 
 
@@ -20,31 +19,10 @@ def read_from_log_file(file_name):
     return samples
 
 
-def append_flipped_training_data(xx, yy):
-    x_result = list(xx)
-    y_result = list(yy)
-    for x, y in zip(xx, yy):
-        x_result.append(np.fliplr(x))
-        y_result.append(y)
-    return x_result, y_result
-
-
-def append_randomly_rotated_training_data(xx, yy):
-    random_degree = random.uniform(-5, 5)
-    x_result = list(xx)
-    y_result = list(yy)
-    for x, y in zip(xx, yy):
-        rot = sk.transform.rotate(x, random_degree, preserve_range=True).astype(np.uint8)
-        x_result.append(rot)
-        y_result.append(y)
-    return x_result, y_result
-
-
-def create_samples_from_log():
-    samples = read_from_log_file('labeled_data.csv')
+def create_samples_from_list(samples_list):
     images = []
     tl_states = []
-    for line in samples:
+    for line in samples_list:
         # add images
         image = cv2.imread(line[0])
         images.append(image)
@@ -52,20 +30,30 @@ def create_samples_from_log():
         # add traffic light states
         tl_state = int(line[1])
         tl_states.append(tl_state)
-    return images, tl_states
+
+    y_one_hot = LabelBinarizer().fit_transform(np.array(tl_states))
+    return np.array(images), y_one_hot
 
 
-def create_augmented_training_set():
-    images, tl_states = create_samples_from_log()
-    x_train, y_train = append_flipped_training_data(images, tl_states)
-    x_train, y_train = append_randomly_rotated_training_data(x_train, y_train)
-    y_one_hot = LabelBinarizer().fit_transform(np.array(y_train))
-    return np.array(x_train), y_one_hot
+def create_train_validation_split():
+    samples_list = read_from_log_file('labeled_data.csv')
+    train_list, validation_list = train_test_split(samples_list, test_size=0.2, shuffle=True)
+
+    train_samples = create_samples_from_list(train_list)
+    validation_samples = create_samples_from_list(validation_list)
+
+    return train_samples, validation_samples
 
 
 def print_samples_stats():
     print("Statistic of original (non-augmented) data set:")
-    images, tl_states = create_samples_from_log()
+    samples_list = read_from_log_file('labeled_data.csv')
+
+    tl_states = []
+    for line in samples_list:
+        tl_state = int(line[1])
+        tl_states.append(tl_state)
+
     total = len(tl_states)
     red = tl_states.count(0)
     yellow = tl_states.count(1)
@@ -85,8 +73,17 @@ def print_samples_stats():
 
 if __name__ == '__main__':
     print_samples_stats()
-    x_samples, y_samples = create_augmented_training_set()
+
+    train, validation = create_train_validation_split()
+    train_images = np.array(train[0])
+    train_labels = np.array(train[1])
+    validation_images = np.array(validation[0])
+    validation_labels = np.array((validation[1]))
+    print(train_images.shape)
+    print(train_labels.shape)
+    print(validation_images.shape)
+    print(validation_labels.shape)
 
     # display one image for demo purposes
-    plt.imshow(cv2.cvtColor(x_samples[3], cv2.COLOR_BGR2RGB))
+    plt.imshow(cv2.cvtColor(train_images[3], cv2.COLOR_BGR2RGB))
     plt.show()
