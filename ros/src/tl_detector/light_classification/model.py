@@ -9,12 +9,12 @@ from keras.layers.convolutional import Conv2D
 from keras.layers.core import Activation, Flatten, Dropout
 from keras.layers.pooling import MaxPooling2D
 from keras.models import Sequential
-from keras.preprocessing.image import ImageDataGenerator
 
-from sample_generator import create_train_validation_split
+from sample_generator import create_train_validation_samples_lists, create_augmented_data_generator, raw_training_data_generator
 
 # 1: define model architecture
 model = Sequential()
+# TODO: use constants
 model.add(Lambda(lambda image: K.tf.image.resize_images(image, (150, 200)), input_shape=(600, 800, 3)))
 model.add(Lambda(lambda x: x / 255.0 - 0.5))
 model.add(Conv2D(32, (3, 3)))
@@ -32,12 +32,15 @@ model.summary()
 # 2: compile and fit the model
 model.compile('adam', 'categorical_crossentropy', ['accuracy'])
 batch_size = 16
-augmented_image_generator = ImageDataGenerator(rotation_range=5, horizontal_flip=True, data_format='channels_last')
-train, validation = create_train_validation_split()
+
+train_list, validation_list = create_train_validation_samples_lists()
+training_generator = raw_training_data_generator(train_list, batch_size)
+validation_generator = raw_training_data_generator(validation_list, batch_size)
+
 start_time = datetime.datetime.now()
-history = model.fit_generator(augmented_image_generator.flow(train, batch_size=batch_size),
-                              validation_data=validation,
-                              steps_per_epoch=len(train[0]) // batch_size, epochs=4)
+history = model.fit_generator(training_generator, steps_per_epoch=len(train_list) / batch_size,
+                              validation_data=validation_generator, validation_steps=len(validation_list) / batch_size,
+                              epochs=4)
 training_time = str((datetime.datetime.now() - start_time).seconds)
 
 # 3: save history to file

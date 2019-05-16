@@ -5,8 +5,14 @@ import csv
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+from keras.preprocessing.image import ImageDataGenerator
+from keras.utils.np_utils import to_categorical
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelBinarizer
+
+IMAGE_HEIGHT = 600
+IMAGE_WIDTH = 800
+IMAGE_CHANNEL = 3
+NUM_CLASSES = 4
 
 
 def read_from_log_file(file_name):
@@ -31,18 +37,35 @@ def create_samples_from_list(samples_list):
         tl_state = int(line[1])
         tl_states.append(tl_state)
 
-    y_one_hot = LabelBinarizer().fit_transform(np.array(tl_states))
+    y_one_hot = to_categorical(np.array(tl_states), num_classes=NUM_CLASSES)
     return np.array(images), y_one_hot
 
 
-def create_train_validation_split():
+def create_train_validation_samples_lists():
     samples_list = read_from_log_file('labeled_data.csv')
     train_list, validation_list = train_test_split(samples_list, test_size=0.2, shuffle=True)
+    return train_list, validation_list
 
-    train_samples = create_samples_from_list(train_list)
-    validation_samples = create_samples_from_list(validation_list)
 
-    return train_samples, validation_samples
+def raw_training_data_generator(samples_list, batch_size):
+    num_samples = len(samples_list)
+    while True:
+        for offset in range(0, num_samples, batch_size):
+            batch_samples_list = samples_list[offset:offset + batch_size]
+            x_train, y_train = create_samples_from_list(batch_samples_list)
+            yield x_train, y_train
+
+
+def create_augmented_data_generator(samples_list, batch_size):
+    raw_gen = raw_training_data_generator(samples_list, batch_size)
+    augmented_image_generator = ImageDataGenerator(rotation_range=5, horizontal_flip=True, data_format='channels_last')
+    # alternative = ImageDataGenerator(rotation_range=15, width_shift_range=0.1, height_shift_range=0.1, shear_range=0.01,
+    #                                  zoom_range=[0.9, 1.25], horizontal_flip=True, vertical_flip=False, fill_mode='reflect',
+    #                                  data_format='channels_last', brightness_range=[0.5, 1.5])
+    for x, y in raw_gen:
+        aug_gen = augmented_image_generator.flow(x, y, batch_size=x.shape[0])
+        x, y = next(aug_gen)
+        yield x, y
 
 
 def print_samples_stats():
@@ -58,7 +81,7 @@ def print_samples_stats():
     red = tl_states.count(0)
     yellow = tl_states.count(1)
     green = tl_states.count(2)
-    unknown = tl_states.count(4)
+    unknown = tl_states.count(3)
 
     output = '''
         Total number of traffic lights: {}
@@ -74,16 +97,7 @@ def print_samples_stats():
 if __name__ == '__main__':
     print_samples_stats()
 
-    train, validation = create_train_validation_split()
-    train_images = np.array(train[0])
-    train_labels = np.array(train[1])
-    validation_images = np.array(validation[0])
-    validation_labels = np.array((validation[1]))
-    print(train_images.shape)
-    print(train_labels.shape)
-    print(validation_images.shape)
-    print(validation_labels.shape)
-
-    # display one image for demo purposes
-    plt.imshow(cv2.cvtColor(train_images[3], cv2.COLOR_BGR2RGB))
-    plt.show()
+    samp_list = read_from_log_file('labeled_data.csv')[:16]
+    x, y = create_samples_from_list(samp_list)
+    print(x.shape)
+    print(y.shape)
