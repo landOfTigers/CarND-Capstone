@@ -10,7 +10,7 @@ from keras.layers.core import Activation, Flatten, Dropout
 from keras.layers.pooling import MaxPooling2D
 from keras.models import Sequential
 
-from sample_generator import create_train_validation_samples_lists, create_augmented_data_generator, raw_training_data_generator
+from sample_generator import create_train_validation_samples_lists, create_augmented_data_generator
 
 # 1: define model architecture
 model = Sequential()
@@ -31,16 +31,17 @@ model.summary()
 
 # 2: compile and fit the model
 model.compile('adam', 'categorical_crossentropy', ['accuracy'])
-batch_size = 16
+BATCH_SIZE = 16
+EPOCHS = 3
 
 train_list, validation_list = create_train_validation_samples_lists()
-training_generator = raw_training_data_generator(train_list, batch_size)
-validation_generator = raw_training_data_generator(validation_list, batch_size)
+training_generator = create_augmented_data_generator(train_list, BATCH_SIZE)
+validation_generator = create_augmented_data_generator(validation_list, BATCH_SIZE)
 
 start_time = datetime.datetime.now()
-history = model.fit_generator(training_generator, steps_per_epoch=len(train_list) / batch_size,
-                              validation_data=validation_generator, validation_steps=len(validation_list) / batch_size,
-                              epochs=4)
+history = model.fit_generator(training_generator, steps_per_epoch=len(train_list) / BATCH_SIZE,
+                              validation_data=validation_generator, validation_steps=len(validation_list) / BATCH_SIZE,
+                              epochs=EPOCHS)
 training_time = str((datetime.datetime.now() - start_time).seconds)
 
 # 3: save history to file
