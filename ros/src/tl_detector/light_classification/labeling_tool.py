@@ -20,7 +20,7 @@ def state_mapper(state):
         return 1
     if state == "g":
         return 2
-    return 4
+    return 3
 
 
 def get_char():
