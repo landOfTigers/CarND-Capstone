@@ -57,7 +57,9 @@ def raw_training_data_generator(samples_list, batch_size):
 
 def create_augmented_data_generator(samples_list, batch_size):
     raw_gen = raw_training_data_generator(samples_list, batch_size)
-    augmented_image_generator = ImageDataGenerator(horizontal_flip=True, rotation_range=5, data_format='channels_last')
+    augmented_image_generator = ImageDataGenerator(horizontal_flip=True, rotation_range=5, width_shift_range=0.05,
+                                                   height_shift_range=0.05, zoom_range=[0.95, 1.05],
+                                                   fill_mode='reflect', data_format='channels_last')
     # alternative = ImageDataGenerator(rotation_range=15, width_shift_range=0.1, height_shift_range=0.1, shear_range=0.01,
     #                                  zoom_range=[0.9, 1.25], horizontal_flip=True, vertical_flip=False, fill_mode='reflect',
     #                                  data_format='channels_last', brightness_range=[0.5, 1.5])
