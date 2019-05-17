@@ -32,7 +32,7 @@ model.summary()
 # 2: compile and fit the model
 model.compile('adam', 'categorical_crossentropy', ['accuracy'])
 BATCH_SIZE = 16
-EPOCHS = 3
+EPOCHS = 6
 
 train_list, validation_list = create_train_validation_samples_lists()
 training_generator = create_augmented_data_generator(train_list, BATCH_SIZE)
