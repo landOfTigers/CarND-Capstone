@@ -140,13 +140,16 @@ class WaypointUpdater(object):
         pass
 
     # TODO: use these methods for better readability
-    def get_waypoint_velocity(self, waypoint):
+    @staticmethod
+    def get_waypoint_velocity(waypoint):
         return waypoint.twist.twist.linear.x
 
-    def set_waypoint_velocity(self, waypoints, waypoint, velocity):
+    @staticmethod
+    def set_waypoint_velocity(waypoints, waypoint, velocity):
         waypoints[waypoint].twist.twist.linear.x = velocity
 
-    def distance(self, waypoints, wp1, wp2):
+    @staticmethod
+    def distance(waypoints, wp1, wp2):
         dist = 0
         dl = lambda a, b: math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2)
         for i in range(wp1, wp2 + 1):

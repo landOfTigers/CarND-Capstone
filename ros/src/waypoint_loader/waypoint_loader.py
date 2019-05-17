@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
-import os
 import csv
 import math
+import os
 
-from geometry_msgs.msg import Quaternion
-
-from styx_msgs.msg import Lane, Waypoint
-
-import tf
 import rospy
+import tf
+from geometry_msgs.msg import Quaternion
+from styx_msgs.msg import Lane, Waypoint
 
 CSV_HEADER = ['x', 'y', 'z', 'yaw']
 MAX_DECEL = 1.0
@@ -34,10 +32,12 @@ class WaypointLoader(object):
         else:
             rospy.logerr('%s is not a file', path)
 
-    def quaternion_from_yaw(self, yaw):
+    @staticmethod
+    def quaternion_from_yaw(yaw):
         return tf.transformations.quaternion_from_euler(0., 0., yaw)
 
-    def kmph2mps(self, velocity_kmph):
+    @staticmethod
+    def kmph2mps(velocity_kmph):
         return (velocity_kmph * 1000.) / (60. * 60.)
 
     def load_waypoints(self, fname):
@@ -56,9 +56,10 @@ class WaypointLoader(object):
                 waypoints.append(p)
         return self.decelerate(waypoints)
 
-    def distance(self, p1, p2):
+    @staticmethod
+    def distance(p1, p2):
         x, y, z = p1.x - p2.x, p1.y - p2.y, p1.z - p2.z
-        return math.sqrt(x*x + y*y + z*z)
+        return math.sqrt(x * x + y * y + z * z)
 
     def decelerate(self, waypoints):
         last = waypoints[-1]
