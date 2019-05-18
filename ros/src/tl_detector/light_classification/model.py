@@ -3,7 +3,7 @@
 import datetime
 import json
 
-from keras import backend as k
+from keras import backend as K
 from keras.layers import Lambda, Dense
 from keras.layers.convolutional import Conv2D
 from keras.layers.core import Activation, Flatten, Dropout
@@ -15,7 +15,7 @@ from sample_generator import create_train_validation_samples_lists, create_augme
 # 1: define model architecture
 model = Sequential()
 # TODO: use constants
-model.add(Lambda(lambda image: k.tf.image.resize_images(image, (75, 100)), input_shape=(600, 800, 3)))
+model.add(Lambda(lambda image: K.tf.image.resize_images(image, (150, 200)), input_shape=(600, 800, 3)))
 model.add(Lambda(lambda x: x / 255.0 - 0.5))
 model.add(Conv2D(32, (3, 3)))
 model.add(MaxPooling2D((2, 2)))

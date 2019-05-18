@@ -1,12 +1,15 @@
 #!/usr/bin/env python
-import math
-
 import rospy
 import tf
-from geometry_msgs.msg import PoseStamped, Quaternion
-from std_msgs.msg import Header
+import cv2
+import time
 from styx_msgs.msg import TrafficLightArray, TrafficLight
+from std_msgs.msg import Header
+from geometry_msgs.msg import PoseStamped, Quaternion, TwistStamped
 
+import numpy as np
+import rospkg
+import math
 
 class TLPublisher(object):
     def __init__(self):
@@ -39,8 +42,7 @@ class TLPublisher(object):
 
         return light
 
-    @staticmethod
-    def create_pose(x, y, z, yaw=0.):
+    def create_pose(self, x, y, z, yaw=0.):
         pose = PoseStamped()
 
         pose.header = Header()
@@ -51,7 +53,7 @@ class TLPublisher(object):
         pose.pose.position.y = y
         pose.pose.position.z = z
 
-        q = tf.transformations.quaternion_from_euler(0., 0., math.pi * yaw / 180.)
+        q = tf.transformations.quaternion_from_euler(0., 0., math.pi * yaw/180.)
         pose.pose.orientation = Quaternion(*q)
 
         return pose

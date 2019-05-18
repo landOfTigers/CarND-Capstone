@@ -60,10 +60,13 @@ def create_augmented_data_generator(samples_list, batch_size):
     augmented_image_generator = ImageDataGenerator(horizontal_flip=True, rotation_range=5, width_shift_range=0.05,
                                                    height_shift_range=0.05, zoom_range=[0.95, 1.05],
                                                    fill_mode='reflect', data_format='channels_last')
-    for x_samp, y_samp in raw_gen:
-        aug_gen = augmented_image_generator.flow(x_samp, y_samp, batch_size=x_samp.shape[0])
-        x_samp, y_samp = next(aug_gen)
-        yield x_samp, y_samp
+    # alternative = ImageDataGenerator(rotation_range=15, width_shift_range=0.1, height_shift_range=0.1, shear_range=0.01,
+    #                                  zoom_range=[0.9, 1.25], horizontal_flip=True, vertical_flip=False, fill_mode='reflect',
+    #                                  data_format='channels_last', brightness_range=[0.5, 1.5])
+    for x, y in raw_gen:
+        aug_gen = augmented_image_generator.flow(x, y, batch_size=x.shape[0])
+        x, y = next(aug_gen)
+        yield x, y
 
 
 def print_samples_stats():
@@ -94,3 +97,8 @@ def print_samples_stats():
 
 if __name__ == '__main__':
     print_samples_stats()
+
+    samp_list = read_from_log_file('labeled_data.csv')[:16]
+    x, y = create_samples_from_list(samp_list)
+    print(x.shape)
+    print(y.shape)

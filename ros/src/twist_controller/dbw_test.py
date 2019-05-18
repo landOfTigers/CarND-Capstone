@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-import csv
 import os
+import csv
 
 import rospy
-from dbw_mkz_msgs.msg import ThrottleCmd, SteeringCmd, BrakeCmd
 from std_msgs.msg import Bool
+from dbw_mkz_msgs.msg import ThrottleCmd, SteeringCmd, BrakeCmd, SteeringReport
+
 
 '''
 You can use this file to test your DBW code against a bag recorded with a reference implementation.
@@ -53,7 +54,7 @@ class DBWTestNode(object):
         self.loop()
 
     def loop(self):
-        rate = rospy.Rate(10)  # 10Hz
+        rate = rospy.Rate(10) # 10Hz
         while not rospy.is_shutdown():
             rate.sleep()
         fieldnames = ['actual', 'proposed']

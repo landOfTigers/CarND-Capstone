@@ -1,7 +1,7 @@
 import base64
-import math
 from io import BytesIO
 
+import math
 import numpy as np
 import rospy
 import sensor_msgs.point_cloud2 as pcl2
@@ -67,8 +67,7 @@ class Bridge(object):
 
         return light
 
-    @staticmethod
-    def create_pose(x, y, z, yaw=0.):
+    def create_pose(self, x, y, z, yaw=0.):
         pose = PoseStamped()
 
         pose.header = Header()
@@ -84,14 +83,12 @@ class Bridge(object):
 
         return pose
 
-    @staticmethod
-    def create_float(val):
+    def create_float(self, val):
         fl = Float()
         fl.data = val
         return fl
 
-    @staticmethod
-    def create_twist(velocity, angular):
+    def create_twist(self, velocity, angular):
         tw = TwistStamped()
         tw.twist.linear.x = velocity
         tw.twist.angular.z = angular
@@ -112,16 +109,14 @@ class Bridge(object):
         self.prev_time = rospy.get_time()
         return angular_vel
 
-    @staticmethod
-    def create_point_cloud_message(pts):
+    def create_point_cloud_message(self, pts):
         header = Header()
         header.stamp = rospy.Time.now()
         header.frame_id = '/world'
         cloud_message = pcl2.create_cloud_xyz32(header, pts)
         return cloud_message
 
-    @staticmethod
-    def broadcast_transform(name, position, orientation):
+    def broadcast_transform(self, name, position, orientation):
         br = tf.TransformBroadcaster()
         br.sendTransform(position, orientation, rospy.Time.now(), name, "world")
 
@@ -173,8 +168,8 @@ class Bridge(object):
         self.publishers['dbw_status'].publish(Bool(data))
 
     def publish_camera(self, data):
-        img_string = data["image"]
-        image = PIL_Image.open(BytesIO(base64.b64decode(img_string)))
+        imgString = data["image"]
+        image = PIL_Image.open(BytesIO(base64.b64decode(imgString)))
         image_array = np.asarray(image)
 
         image_message = self.bridge.cv2_to_imgmsg(image_array, encoding="rgb8")
