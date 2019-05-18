@@ -15,7 +15,7 @@ from sample_generator import create_train_validation_samples_lists, create_augme
 # 1: define model architecture
 model = Sequential()
 # TODO: use constants
-model.add(Lambda(lambda image: K.tf.image.resize_images(image, (150, 200)), input_shape=(600, 800, 3)))
+model.add(Lambda(lambda image: K.tf.image.resize_images(image, (75, 100)), input_shape=(600, 800, 3)))
 model.add(Lambda(lambda x: x / 255.0 - 0.5))
 model.add(Conv2D(32, (3, 3)))
 model.add(MaxPooling2D((2, 2)))
@@ -32,7 +32,7 @@ model.summary()
 # 2: compile and fit the model
 model.compile('adam', 'categorical_crossentropy', ['accuracy'])
 BATCH_SIZE = 16
-EPOCHS = 6
+EPOCHS = 10
 
 train_list, validation_list = create_train_validation_samples_lists()
 training_generator = create_augmented_data_generator(train_list, BATCH_SIZE)
