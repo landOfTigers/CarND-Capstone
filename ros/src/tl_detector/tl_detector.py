@@ -1,16 +1,18 @@
 #!/usr/bin/env python
-import rospy
-from std_msgs.msg import Int32
-from geometry_msgs.msg import PoseStamped, Pose
-from styx_msgs.msg import TrafficLightArray, TrafficLight
-from styx_msgs.msg import Lane
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
-from light_classification.tl_classifier import TLClassifier
-from scipy.spatial import KDTree
-import tf
-import cv2
 import yaml
+
+import cv2
+import rospy
+import tf
+from cv_bridge import CvBridge
+from geometry_msgs.msg import PoseStamped
+from scipy.spatial import KDTree
+from sensor_msgs.msg import Image
+from std_msgs.msg import Int32
+from styx_msgs.msg import Lane
+from styx_msgs.msg import TrafficLightArray, TrafficLight
+
+from light_classification.tl_classifier import TLClassifier
 
 STATE_COUNT_THRESHOLD = 3
 
@@ -29,8 +31,8 @@ class TLDetector(object):
         self.record_data = False
         self.light_classifier = TLClassifier()
 
-        sub1 = rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
-        sub2 = rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
+        rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
+        rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
 
         '''
         /vehicle/traffic_lights provides you with the location of the traffic light in 3D map space and
@@ -39,8 +41,8 @@ class TLDetector(object):
         simulator. When testing on the vehicle, the color state will not be available. You'll need to
         rely on the position of the light and the camera image to predict it.
         '''
-        sub3 = rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
-        sub6 = rospy.Subscriber('/image_color', Image, self.image_cb)
+        rospy.Subscriber('/vehicle/traffic_lights', TrafficLightArray, self.traffic_cb)
+        rospy.Subscriber('/image_color', Image, self.image_cb)
 
         config_string = rospy.get_param("/traffic_light_config")
         self.config = yaml.load(config_string)
@@ -120,7 +122,7 @@ class TLDetector(object):
         """
         return self.waypoint_tree.query([x, y], 1)[1]
 
-    def get_light_state(self, light):
+    def get_light_state(self):
         """Determines the current color of the traffic light
 
         Args:
@@ -137,9 +139,6 @@ class TLDetector(object):
 
         cv_image = self.bridge.imgmsg_to_cv2(self.camera_image, "bgr8")
         classification = self.light_classifier.get_classification(cv_image)
-        ground_truth = light.state
-        rospy.loginfo('Classification: %s' % classification)
-        rospy.loginfo('Ground truth: %s' % ground_truth)
         return classification
 
     def process_traffic_lights(self):
@@ -172,7 +171,7 @@ class TLDetector(object):
                     stop_line_wp_idx = temp_stop_line_wp_idx
 
         if closest_light:
-            state = self.get_light_state(closest_light)
+            state = self.get_light_state()
             return stop_line_wp_idx, state
 
         return -1, TrafficLight.UNKNOWN

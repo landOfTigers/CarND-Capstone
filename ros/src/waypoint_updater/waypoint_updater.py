@@ -25,7 +25,6 @@ TODO (for Yousuf and Aaron): Stopline location for each traffic light.
 '''
 
 LOOKAHEAD_WPS = 100  # Number of waypoints we will publish. You can change this number
-MAX_DECELERATION = 0.5
 
 
 class WaypointUpdater(object):
@@ -102,17 +101,10 @@ class WaypointUpdater(object):
         closest_idx = self.get_closest_waypoint_idx()
         farthest_idx = closest_idx + LOOKAHEAD_WPS
         base_waypoints = self.base_lane.waypoints[closest_idx:farthest_idx]
-
-        # rospy.loginfo("Closest wp idx: {}".format(closest_idx))
-        # rospy.loginfo("Red light stop line: {}".format(self.stopline_waypoint_idx))
-        # rospy.loginfo("Farthest wp idx: {}".format(farthest_idx))
-
         initial_wp_delay = 4
         if (0 <= self.stopline_waypoint_idx <= farthest_idx) and (closest_idx > self.start_position + initial_wp_delay):
-            # rospy.loginfo("Decelerating...")
             lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
         else:
-            # rospy.loginfo("Going normally")
             lane.waypoints = base_waypoints
 
         return lane
@@ -140,13 +132,16 @@ class WaypointUpdater(object):
         pass
 
     # TODO: use these methods for better readability
-    def get_waypoint_velocity(self, waypoint):
+    @staticmethod
+    def get_waypoint_velocity(waypoint):
         return waypoint.twist.twist.linear.x
 
-    def set_waypoint_velocity(self, waypoints, waypoint, velocity):
+    @staticmethod
+    def set_waypoint_velocity(waypoints, waypoint, velocity):
         waypoints[waypoint].twist.twist.linear.x = velocity
 
-    def distance(self, waypoints, wp1, wp2):
+    @staticmethod
+    def distance(waypoints, wp1, wp2):
         dist = 0
         dl = lambda a, b: math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2)
         for i in range(wp1, wp2 + 1):

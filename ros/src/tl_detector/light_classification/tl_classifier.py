@@ -22,8 +22,8 @@ class TLClassifier(object):
 
         """
         predictions = self.model.predict(image[None, :, :, :], batch_size=1)
-        rospy.loginfo('Predictions: %s' % predictions)
         classification = np.argmax(predictions[0])
         if classification == 3:
             classification = 4
+        rospy.loginfo('Classification: %s' % classification)
         return classification

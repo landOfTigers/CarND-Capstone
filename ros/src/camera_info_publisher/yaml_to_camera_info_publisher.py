@@ -16,11 +16,13 @@ The yaml parsing is courtesy ROS-user Stephan:
 
 This file just extends that parser into a rosnode.
 """
-import rospy
 import yaml
+
+import rospy
 from sensor_msgs.msg import CameraInfo
 
-def yaml_to_CameraInfo(calib_yaml):
+
+def yaml_to_camera_info(calibration_yaml):
     """
     Parse a yaml file containing camera calibration data (as produced by
     rosrun camera_calibration cameracalibrator.py) into a
@@ -33,29 +35,30 @@ def yaml_to_CameraInfo(calib_yaml):
 
     Returns
     -------
-    camera_info_msg : sensor_msgs.msg.CameraInfo
+    msg : sensor_msgs.msg.CameraInfo
         A sensor_msgs.msg.CameraInfo message containing the camera calibration
         data
     """
     # Load data from file
-    calib_data = yaml.load(calib_yaml)
+    calib_data = yaml.load(calibration_yaml)
     # Parse
-    camera_info_msg = CameraInfo()
-    camera_info_msg.width = calib_data["image_width"]
-    camera_info_msg.height = calib_data["image_height"]
-    camera_info_msg.K = calib_data["camera_matrix"]["data"]
-    camera_info_msg.D = calib_data["distortion_coefficients"]["data"]
-    camera_info_msg.R = calib_data["rectification_matrix"]["data"]
-    camera_info_msg.P = calib_data["projection_matrix"]["data"]
-    camera_info_msg.distortion_model = calib_data["distortion_model"]
-    return camera_info_msg
+    msg = CameraInfo()
+    msg.width = calib_data["image_width"]
+    msg.height = calib_data["image_height"]
+    msg.K = calib_data["camera_matrix"]["data"]
+    msg.D = calib_data["distortion_coefficients"]["data"]
+    msg.R = calib_data["rectification_matrix"]["data"]
+    msg.P = calib_data["projection_matrix"]["data"]
+    msg.distortion_model = calib_data["distortion_model"]
+    return msg
+
 
 if __name__ == "__main__":
 
     calib_yaml = rospy.get_param("/grasshopper_calibration_yaml")
 
     # Parse yaml file
-    camera_info_msg = yaml_to_CameraInfo(calib_yaml)
+    camera_info_msg = yaml_to_camera_info(calib_yaml)
 
     # Initialize publisher node
     rospy.init_node("camera_info_publisher", anonymous=True)
