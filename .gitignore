@@ -6,3 +6,4 @@ devel
 profile.tmp
 
 .idea
+ros/src/tl_detector/light_classification/tl_images/*.png
