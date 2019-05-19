@@ -111,7 +111,7 @@ class WaypointUpdater(object):
 
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
-        stop_idx = max(self.stopline_waypoint_idx - closest_idx - 2, 0)
+        stop_idx = max(self.stopline_waypoint_idx - closest_idx - 20, 0)
 
         velocities = np.linspace(0.0, self.current_velocity, endpoint=False, num=(stop_idx + 1)).tolist()[::-1]
         velocities.extend([0.0] * (LOOKAHEAD_WPS - stop_idx - 1))
