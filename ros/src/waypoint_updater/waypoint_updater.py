@@ -131,15 +131,6 @@ class WaypointUpdater(object):
         # TODO: Callback for /obstacle_waypoint message. We will implement it later
         pass
 
-    # TODO: use these methods for better readability
-    @staticmethod
-    def get_waypoint_velocity(waypoint):
-        return waypoint.twist.twist.linear.x
-
-    @staticmethod
-    def set_waypoint_velocity(waypoints, waypoint, velocity):
-        waypoints[waypoint].twist.twist.linear.x = velocity
-
     @staticmethod
     def distance(waypoints, wp1, wp2):
         dist = 0

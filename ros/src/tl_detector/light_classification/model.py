@@ -12,10 +12,18 @@ from keras.models import Sequential
 
 from sample_generator import create_train_validation_samples_lists, create_augmented_data_generator
 
+IMAGE_WIDTH = 800
+IMAGE_HEGHT = 600
+CHANNELS = 3
+RESIZE_FACTOR = 8
+NUM_CLASSES = 4
+
 # 1: define model architecture
 model = Sequential()
-# TODO: use constants
-model.add(Lambda(lambda image: K.tf.image.resize_images(image, (75, 100)), input_shape=(600, 800, 3)))
+model.add(Lambda(
+    lambda image: K.tf.image.resize_images(image, (IMAGE_HEGHT / RESIZE_FACTOR, IMAGE_WIDTH / RESIZE_FACTOR)),
+    input_shape=(IMAGE_WIDTH, IMAGE_HEGHT, CHANNELS)
+))
 model.add(Lambda(lambda x: x / 255.0 - 0.5))
 model.add(Conv2D(32, (3, 3)))
 model.add(MaxPooling2D((2, 2)))
@@ -24,7 +32,7 @@ model.add(Activation('relu'))
 model.add(Flatten())
 model.add(Dense(128))
 model.add(Activation('relu'))
-model.add(Dense(4))
+model.add(Dense(NUM_CLASSES))
 model.add(Activation('softmax'))
 model.compile(loss='mse', optimizer='adam')
 model.summary()

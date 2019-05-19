@@ -62,7 +62,6 @@ class TLDetector(object):
     def pose_cb(self, msg):
         self.pose = msg
 
-    # TODO: extract common function between this node and cb in waypoint_updater
     def waypoints_cb(self, waypoints):
         self.waypoints = waypoints
         if not self.waypoint_tree:

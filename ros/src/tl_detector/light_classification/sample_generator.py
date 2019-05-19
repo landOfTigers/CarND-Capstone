@@ -8,9 +8,6 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.utils.np_utils import to_categorical
 from sklearn.model_selection import train_test_split
 
-IMAGE_HEIGHT = 600
-IMAGE_WIDTH = 800
-IMAGE_CHANNEL = 3
 NUM_CLASSES = 4
 
 
@@ -94,8 +91,3 @@ def print_samples_stats():
 
 if __name__ == '__main__':
     print_samples_stats()
-
-    samp_list = read_from_log_file('labeled_data.csv')[:16]
-    x, y = create_samples_from_list(samp_list)
-    print(x.shape)
-    print(y.shape)
